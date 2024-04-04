@@ -19,13 +19,30 @@ const PostSchema = Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
   }
 );
+
+// Populated virtual
+PostSchema.virtual("likedBy", {
+  ref: "users",
+  localField: "_id",
+  foreignField: "likedPosts",
+});
+
+// Populated virtual
+PostSchema.virtual("likedByCount", {
+  ref: "users",
+  localField: "_id",
+  foreignField: "likedPosts",
+  count: true,
+});
 
 PostSchema.pre("find", function (next) {
   // this = request / query
   this.populate("user");
   this.populate("comments.user");
+  //   this.select("-comments");
   next();
 });
 

@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { User } = require("../db");
-
+const routeHandler = require("../utils/routeHandler");
 const router = Router();
 
 router.get("/", async (_, res) => {
@@ -24,5 +24,14 @@ router.post("/signin", async (req, res) => {
 
   res.json({ result: Boolean(user) && user.password === password });
 });
+
+router.get(
+  "/byMonth",
+  routeHandler(async (_, res) => {
+    const data = await User.findByInscriptionMonth();
+
+    res.json({ result: true, data });
+  })
+);
 
 module.exports = router;

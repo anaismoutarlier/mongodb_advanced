@@ -44,6 +44,7 @@ const UserSchema = mongoose.Schema(
       default: "pending",
     },
     birthdate: Date,
+    likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "posts" }],
   },
   {
     timestamps: true,
@@ -77,6 +78,54 @@ UserSchema.loadClass(
 
     static findActive(filter = {}) {
       return this.find({ ...filter, status: "active" });
+    }
+
+    static findByInscriptionMonth() {
+      const query = [
+        {
+          $addFields: {
+            year: {
+              $year: "$createdAt",
+            },
+            month: {
+              $month: "$createdAt",
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              year: "$year",
+              month: "$month",
+            },
+            users: {
+              $push: {
+                _id: "$_id",
+                username: "$username",
+              },
+            },
+          },
+        },
+        {
+          $sort: {
+            "_id.year": 1,
+            "_id.month": 1,
+          },
+        },
+        {
+          $project: {
+            year: "$_id.year",
+            month: "$_id.month",
+            users: 1,
+            _id: 0,
+            nbUsers: {
+              $size: "$users",
+            },
+          },
+        },
+      ];
+
+      return this.aggregate(query);
     }
   }
 );
